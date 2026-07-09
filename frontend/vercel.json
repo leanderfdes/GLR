@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/kpi/(.*)", "destination": "https://api.taxplanadvisor.in/api/staff/kpi/$1" },
     { "source": "/auth/(.*)", "destination": "https://glr.taxplanadvisor.in/auth/$1" },
     { "source": "/dashboard/(.*)", "destination": "https://glr.taxplanadvisor.in/dashboard/$1" },
     { "source": "/attendance/(.*)", "destination": "https://glr.taxplanadvisor.in/attendance/$1" },
@@ -11,7 +12,7 @@
     { "source": "/leave/(.*)", "destination": "https://glr.taxplanadvisor.in/leave/$1" },
     { "source": "/payroll/(.*)", "destination": "https://glr.taxplanadvisor.in/payroll/$1" },
     {
-      "source": "/((?!assets|icons|favicon.svg|icons.svg|manifest.webmanifest|service-worker.js|auth/|dashboard/|attendance/|face/|locations/|export/|employees/|company/|leave/|payroll/).*)",
+      "source": "/((?!assets|icons|favicon.svg|icons.svg|manifest.webmanifest|service-worker.js|kpi/|auth/|dashboard/|attendance/|face/|locations/|export/|employees/|company/|leave/|payroll/).*)",
       "destination": "/index.html"
     }
   ]

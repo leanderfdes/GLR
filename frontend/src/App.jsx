@@ -20,6 +20,7 @@ import FaceEnrollPage from "./pages/employee/FaceEnrollPage"
 import HomePage from "./pages/employee/HomePage"
 import MyAttendancePage from "./pages/employee/MyAttendancePage"
 import MyLeavePage from "./pages/employee/MyLeavePage"
+import MyKpisPage from "./pages/employee/MyKpisPage"
 
 function ProtectedRoute({ children, adminOnly = false, employeeOnly = false }) {
   const { user, loading } = useAuth()
@@ -111,6 +112,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MyLeavePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-kpis"
+          element={
+            <ProtectedRoute>
+              <MyKpisPage />
             </ProtectedRoute>
           }
         />
