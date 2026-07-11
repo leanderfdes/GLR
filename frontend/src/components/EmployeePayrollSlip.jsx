@@ -120,7 +120,7 @@ export default function EmployeePayrollSlip() {
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm space-y-5">
           <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">GLR Attendance Slip</h3>
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">TaxPlan Attendance Slip</h3>
               <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">
                 {months.find(m => m.value === month)?.label} {year}
               </p>

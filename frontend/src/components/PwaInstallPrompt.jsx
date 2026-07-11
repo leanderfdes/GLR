@@ -46,7 +46,7 @@ function PwaInstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-[70] rounded-lg border border-emerald-200 bg-white p-4 shadow-lg sm:left-auto sm:w-80">
-      <p className="text-sm font-bold text-gray-950">Install GLR Attendance</p>
+      <p className="text-sm font-bold text-gray-950">Install TaxPlan Attendance</p>
       <p className="mt-1 text-xs text-gray-500">Open it faster from your home screen.</p>
       <div className="mt-3 flex gap-2">
         <button

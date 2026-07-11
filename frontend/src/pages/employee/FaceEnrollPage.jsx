@@ -104,7 +104,7 @@ function FaceEnrollPage() {
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-emerald-600 text-lg font-bold text-white">
-            GLR
+            TP
           </div>
           <h1 className="text-2xl font-bold text-gray-950">Face Enrollment</h1>
           <p className="mt-2 text-sm text-gray-500">

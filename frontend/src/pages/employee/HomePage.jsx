@@ -554,7 +554,7 @@ export default function HomePage() {
                 </svg>
               </div>
               <div className="space-y-1">
-                <h4 className="text-sm font-bold text-gray-950">Install GLR Mobile App</h4>
+                <h4 className="text-sm font-bold text-gray-950">Install TaxPlan Mobile App</h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
                   Add this app to your Home Screen for quick, one-tap face check-in and live attendance updates.
                 </p>

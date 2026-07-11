@@ -36,7 +36,7 @@ function AdminLayout({ children }) {
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-5 py-4 lg:hidden">
         <div className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-xs font-bold text-white">
-            GLR
+            TP
           </div>
           <h2 className="text-base font-bold text-gray-950">Management</h2>
         </div>
@@ -62,10 +62,10 @@ function AdminLayout({ children }) {
       >
         <div className="mb-8 hidden items-center gap-3 lg:flex">
           <div className="grid h-11 w-11 place-items-center rounded-lg bg-emerald-600 text-sm font-bold text-white">
-            GLR
+            TP
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-950">GLR Attendance</h2>
+            <h2 className="text-lg font-bold text-gray-950">TaxPlan Attendance</h2>
             <p className="text-xs font-medium uppercase text-gray-500">Management</p>
           </div>
         </div>

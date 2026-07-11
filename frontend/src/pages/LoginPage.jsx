@@ -68,13 +68,13 @@ function LoginPage() {
       <div className="w-full max-w-md rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
         <div className="mb-8">
           <div className="mb-5 grid h-12 w-12 place-items-center rounded-lg bg-emerald-600 text-sm font-bold text-white">
-            GLR
+            TP
           </div>
           <h1 className="text-3xl font-bold text-gray-950">
             Sign in
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Access your GLR Attendance workspace.
+            Access your TaxPlan Attendance workspace.
           </p>
         </div>
  

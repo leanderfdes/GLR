@@ -59,7 +59,7 @@ function EmployeeLayout({ children }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-xs font-bold text-white">
-              GLR
+              TP
             </div>
             <div>
               <p className="text-sm font-bold text-gray-900">Hi, {name.split(" ")[0]}</p>
