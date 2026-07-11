@@ -1,6 +1,6 @@
 {
-  "name": "GLR Attendance",
-  "short_name": "GLR Attendance",
+  "name": "TaxPlan Attendance",
+  "short_name": "TaxPlan",
   "description": "Employee attendance, face verification, leave, and reporting.",
   "start_url": "/",
   "scope": "/",
