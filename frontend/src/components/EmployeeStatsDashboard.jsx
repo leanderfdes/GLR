@@ -188,7 +188,14 @@ export default function EmployeeStatsDashboard({ user_id = null, initialDate = n
           Loading statistics...
         </div>
       ) : (
-        stats && (
+        stats && (() => {
+          // Defensive: only a clean 200 from /dashboard/employee-stats includes
+          // these nested objects. A degraded response (e.g. a DB hiccup) can
+          // otherwise crash the whole page instead of just showing zeros.
+          const yearlyStats = stats.yearly_stats || {}
+          const monthlyStats = stats.monthly_stats || {}
+          const breakdown = monthlyStats.breakdown || {}
+          return (
           <div className="space-y-6">
             {user_id && (
               <div className="rounded-xl bg-gray-50 p-4 border border-gray-100 flex justify-between items-center">
@@ -215,16 +222,16 @@ export default function EmployeeStatsDashboard({ user_id = null, initialDate = n
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="rounded-xl bg-gray-50 p-4 border border-gray-100 flex flex-col justify-center">
                     <p className="text-2xl font-black text-gray-900">
-                      {stats.yearly_stats.worked_days}{" "}
+                      {yearlyStats.worked_days ?? 0}{" "}
                       <span className="text-xs font-semibold text-gray-400 block sm:inline">
-                        worked out of {stats.yearly_stats.total_working_days} working days
+                        worked out of {yearlyStats.total_working_days ?? 0} working days
                       </span>
                     </p>
                     <p className="text-[10px] font-bold uppercase text-gray-400 mt-1">Days Worked</p>
                   </div>
                   <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
                     <p className="text-2xl font-black text-emerald-600">
-                      {formatHours(stats.yearly_stats.avg_hours ?? 0)}
+                      {formatHours(yearlyStats.avg_hours ?? 0)}
                     </p>
                     <p className="text-[10px] font-bold uppercase text-gray-400 mt-1">Avg Hours/Day</p>
                   </div>
@@ -242,16 +249,16 @@ export default function EmployeeStatsDashboard({ user_id = null, initialDate = n
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="rounded-xl bg-gray-50 p-4 border border-gray-100 flex flex-col justify-center">
                     <p className="text-2xl font-black text-gray-900">
-                      {stats.monthly_stats.worked_days}{" "}
+                      {monthlyStats.worked_days ?? 0}{" "}
                       <span className="text-xs font-semibold text-gray-400 block sm:inline">
-                        worked out of {stats.monthly_stats.total_working_days} working days
+                        worked out of {monthlyStats.total_working_days ?? 0} working days
                       </span>
                     </p>
                     <p className="text-[10px] font-bold uppercase text-gray-400 mt-1">Days Worked</p>
                   </div>
                   <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
                     <p className="text-2xl font-black text-emerald-600">
-                      {formatHours(stats.monthly_stats.avg_hours ?? 0)}
+                      {formatHours(monthlyStats.avg_hours ?? 0)}
                     </p>
                     <p className="text-[10px] font-bold uppercase text-gray-400 mt-1">Avg Hours/Day</p>
                   </div>
@@ -264,11 +271,11 @@ export default function EmployeeStatsDashboard({ user_id = null, initialDate = n
               <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">Monthly Day-Status Breakdown</h4>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 pt-2">
                 {[
-                  { label: "Full Day", value: stats.monthly_stats.breakdown.full_day, color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-                  { label: "Half Day", value: stats.monthly_stats.breakdown.half_day, color: "bg-amber-50 text-amber-700 border-amber-100" },
-                  { label: "Holiday Work", value: stats.monthly_stats.breakdown.holiday_work, color: "bg-purple-50 text-purple-700 border-purple-100" },
-                  { label: "Comp-Off Leave", value: stats.monthly_stats.breakdown.comp_off_leave, color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
-                  { label: "Present", value: stats.monthly_stats.breakdown.present, color: "bg-blue-50 text-blue-700 border-blue-100" }
+                  { label: "Full Day", value: breakdown.full_day ?? 0, color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
+                  { label: "Half Day", value: breakdown.half_day ?? 0, color: "bg-amber-50 text-amber-700 border-amber-100" },
+                  { label: "Holiday Work", value: breakdown.holiday_work ?? 0, color: "bg-purple-50 text-purple-700 border-purple-100" },
+                  { label: "Comp-Off Leave", value: breakdown.comp_off_leave ?? 0, color: "bg-indigo-50 text-indigo-700 border-indigo-100" },
+                  { label: "Present", value: breakdown.present ?? 0, color: "bg-blue-50 text-blue-700 border-blue-100" }
                 ].map((item) => (
                   <div key={item.label} className={`rounded-xl border p-4 text-center ${item.color}`}>
                     <p className="text-2xl font-black">{item.value}</p>
@@ -462,7 +469,8 @@ export default function EmployeeStatsDashboard({ user_id = null, initialDate = n
               </div>
             </div>
           </div>
-        )
+          )
+        })()
       )}
     </div>
   )

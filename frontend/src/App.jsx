@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
 import DashboardPage from "./pages/DashboardPage"
 import EmployeesPage from "./pages/EmployeesPage"
+import ManageKrasPage from "./pages/ManageKrasPage"
 import AttendancePage from "./pages/AttendancePage"
 import ReportsPage from "./pages/ReportsPage"
 import PayrollPage from "./pages/PayrollPage"
@@ -138,6 +139,14 @@ function App() {
           element={
             <ProtectedRoute adminOnly>
               <EmployeesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/kras-kpis"
+          element={
+            <ProtectedRoute adminOnly>
+              <ManageKrasPage />
             </ProtectedRoute>
           }
         />

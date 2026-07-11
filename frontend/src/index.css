@@ -17,3 +17,26 @@
     font: inherit;
   }
 }
+
+/* Rich-text daily-summary: editor content + rendered (sanitized) display.
+   Tailwind's reset strips list markers / heading sizes, so restore them for
+   the small set of tags the summary editor produces. */
+.rte-content,
+.rte-display {
+  line-height: 1.6;
+  word-break: break-word;
+}
+.rte-content:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+}
+.rte-content strong, .rte-content b,
+.rte-display strong, .rte-display b { font-weight: 700; }
+.rte-content em, .rte-content i,
+.rte-display em, .rte-display i { font-style: italic; }
+.rte-content u, .rte-display u { text-decoration: underline; }
+.rte-content h2, .rte-display h2 { font-size: 1.05rem; font-weight: 700; margin: 0.4rem 0 0.2rem; }
+.rte-content ul, .rte-display ul { list-style: disc; padding-left: 1.25rem; margin: 0.3rem 0; }
+.rte-content ol, .rte-display ol { list-style: decimal; padding-left: 1.25rem; margin: 0.3rem 0; }
+.rte-content li, .rte-display li { margin: 0.1rem 0; }
