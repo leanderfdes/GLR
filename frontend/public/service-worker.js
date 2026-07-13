@@ -1,4 +1,4 @@
-const CACHE_NAME = "glr-attendance-pwa-v2"
+const CACHE_NAME = "taxplan-attendance-pwa-v3"
 
 const APP_SHELL = [
   "/",
@@ -12,6 +12,7 @@ const APP_SHELL = [
 
 const API_PREFIXES = [
   "/auth",
+  "/kpi",
   "/dashboard",
   "/employees",
   "/attendance",
