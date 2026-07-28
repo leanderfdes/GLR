@@ -19,3 +19,8 @@ export const updateEmployee = async (id, payload) => {
   const response = await api.put(`/employees/${id}`, payload)
   return response.data
 }
+
+export const resetEmployeePassword = async (id, newPassword) => {
+  const response = await api.post(`/employees/${id}/reset-password`, { new_password: newPassword })
+  return response.data
+}

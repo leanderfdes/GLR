@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import AdminLayout from "../layouts/AdminLayout"
-import { getEmployees, createEmployee, deleteEmployee, updateEmployee } from "../services/employeeService"
+import { getEmployees, createEmployee, deleteEmployee, updateEmployee, resetEmployeePassword } from "../services/employeeService"
 import { getApiErrorMessage } from "../api/axios"
+import { useAuth } from "../context/AuthContext"
 import EmployeeStatsDashboard from "../components/EmployeeStatsDashboard"
 
 function formatRole(role) {
@@ -376,12 +377,150 @@ function EditEmployeeModal({ employee, onClose, onUpdated }) {
   )
 }
 
+function ResetPasswordModal({ employee, onClose, onDone }) {
+  const [password, setPassword] = useState("")
+  const [confirm, setConfirm] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape" && !loading) {
+        onClose()
+      }
+    }
+    window.addEventListener("keydown", handleEscape)
+    return () => window.removeEventListener("keydown", handleEscape)
+  }, [loading, onClose])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError("")
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.")
+      return
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match.")
+      return
+    }
+    setLoading(true)
+    try {
+      await resetEmployeePassword(employee.id, password)
+      setDone(true)
+      onDone?.()
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to reset password"))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !loading) {
+          onClose()
+        }
+      }}
+    >
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
+        <div className="mb-6 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-950">Reset Password</h3>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {done ? (
+          <div className="space-y-4">
+            <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-700">
+              Password updated for <span className="font-bold">{employee.name}</span>. They can log in with the new password now.
+            </p>
+            <button
+              onClick={onClose}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+            <p className="text-sm text-gray-500">
+              Set a new password for <span className="font-semibold text-gray-900">{employee.name}</span> ({employee.email}).
+            </p>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-gray-600">New Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 6 characters"
+                required
+                autoComplete="new-password"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-gray-600">Confirm Password</label>
+              <input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="Re-enter password"
+                required
+                autoComplete="new-password"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              />
+            </div>
+
+            {error && (
+              <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-medium text-red-700">
+                {error}
+              </p>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:bg-emerald-300"
+              >
+                {loading ? "Resetting…" : "Reset Password"}
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function EmployeesPage() {
+  const { user } = useAuth()
+  const isSuperAdmin = user?.role === "superadmin"
   const [employees, setEmployees] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [showModal, setShowModal] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState(null)
+  const [resettingEmployee, setResettingEmployee] = useState(null)
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null)
 
   const fetchEmployees = () => {
@@ -425,6 +564,12 @@ function EmployeesPage() {
             setEmployees((prev) => prev.map((e) => (e.id === updated.id ? updated : e)))
             setEditingEmployee(null)
           }}
+        />
+      )}
+      {resettingEmployee && (
+        <ResetPasswordModal
+          employee={resettingEmployee}
+          onClose={() => setResettingEmployee(null)}
         />
       )}
 
@@ -510,6 +655,17 @@ function EmployeesPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                         </svg>
                       </button>
+                      {isSuperAdmin && emp.email !== "admin@glrattendance.com" && (
+                        <button
+                          onClick={() => setResettingEmployee(emp)}
+                          className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-emerald-600 transition"
+                          title="Reset Password"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                          </svg>
+                        </button>
+                      )}
                       {emp.email !== "admin@glrattendance.com" ? (
                         <button
                           onClick={() => handleDeleteEmployee(emp.id)}
