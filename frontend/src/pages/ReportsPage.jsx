@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import AdminLayout from "../layouts/AdminLayout"
-import { downloadAttendanceReport } from "../services/reportService"
+import { downloadAttendanceReport, downloadAttendanceSummaryReport } from "../services/reportService"
 import { getEmployees } from "../services/employeeService"
 import { getApiErrorMessage } from "../api/axios"
 
@@ -40,6 +40,7 @@ export default function ReportsPage() {
   
   const [employees, setEmployees] = useState([])
   const [selectedEmployee, setSelectedEmployee] = useState("")
+  const [reportType, setReportType] = useState("summary")
   const [scope, setScope] = useState("all") // all | date | month
   
   const [selectedDate, setSelectedDate] = useState(ist.dateStr)
@@ -72,8 +73,10 @@ export default function ReportsPage() {
       filters.employee_id = selectedEmployee
     }
 
-    // Scope filter
-    if (scope === "date") {
+    if (reportType === "summary") {
+      filters.year = selectedYear
+      filters.month = selectedMonth
+    } else if (scope === "date") {
       filters.query_date = selectedDate
     } else if (scope === "month") {
       filters.year = selectedYear
@@ -81,17 +84,21 @@ export default function ReportsPage() {
     }
 
     try {
-      const reportBlob = await downloadAttendanceReport(filters)
+      const reportBlob = reportType === "summary"
+        ? await downloadAttendanceSummaryReport(filters)
+        : await downloadAttendanceReport(filters)
       const url = window.URL.createObjectURL(reportBlob)
       const link = document.createElement("a")
 
       // Dynamic descriptive name
-      let filename = "attendance_report"
+      let filename = reportType === "summary" ? "attendance_summary" : "attendance_report"
       if (selectedEmployee) {
         const emp = employees.find(e => e.employee_id === selectedEmployee || e.id === selectedEmployee)
         if (emp) filename += `_${emp.name.replace(/\s+/g, "_").toLowerCase()}`
       }
-      if (scope === "date") {
+      if (reportType === "summary") {
+        filename += `_${selectedYear}_${String(selectedMonth).padStart(2, "0")}`
+      } else if (scope === "date") {
         filename += `_${selectedDate}`
       } else if (scope === "month") {
         filename += `_${selectedYear}_${selectedMonth}`
@@ -135,7 +142,7 @@ export default function ReportsPage() {
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-black text-gray-950">Export Reports</h2>
-          <p className="text-sm text-gray-500 mt-1">Configure filters to export customized attendance logs to Microsoft Excel.</p>
+          <p className="text-sm text-gray-500 mt-1">Export a monthly attendance summary or detailed attendance logs to Microsoft Excel.</p>
         </div>
 
         <form onSubmit={handleDownload} className="max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-6">
@@ -148,6 +155,18 @@ export default function ReportsPage() {
               {error}
             </div>
           )}
+
+          <div className="space-y-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Report Type</label>
+            <select
+              value={reportType}
+              onChange={(e) => setReportType(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 outline-none transition focus:border-emerald-500 focus:bg-white"
+            >
+              <option value="summary">Monthly Attendance Summary</option>
+              <option value="detailed">Detailed Attendance Logs</option>
+            </select>
+          </div>
 
           {/* Employee Filter */}
           <div className="space-y-2">
@@ -167,31 +186,32 @@ export default function ReportsPage() {
             </select>
           </div>
 
-          {/* Timeframe Scope Selector */}
-          <div className="space-y-2">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Timeframe Scope</label>
-            <div className="flex gap-1 rounded-xl bg-gray-100 p-1 w-full sm:w-max">
-              {[
-                { value: "all", label: "All Time" },
-                { value: "date", label: "Specific Day" },
-                { value: "month", label: "Specific Month" }
-              ].map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setScope(item.value)}
-                  className={`rounded-lg px-4 py-2 text-xs font-bold transition flex-1 sm:flex-initial ${
-                    scope === item.value ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
+          {reportType === "detailed" && (
+            <div className="space-y-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Timeframe Scope</label>
+              <div className="flex gap-1 rounded-xl bg-gray-100 p-1 w-full sm:w-max">
+                {[
+                  { value: "all", label: "All Time" },
+                  { value: "date", label: "Specific Day" },
+                  { value: "month", label: "Specific Month" }
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => setScope(item.value)}
+                    className={`rounded-lg px-4 py-2 text-xs font-bold transition flex-1 sm:flex-initial ${
+                      scope === item.value ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Conditional Scopes */}
-          {scope === "date" && (
+          {reportType === "detailed" && scope === "date" && (
             <div className="space-y-2 rounded-xl bg-gray-50 p-4 border border-gray-100">
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Select Date</label>
               <input
@@ -204,7 +224,7 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {scope === "month" && (
+          {(reportType === "summary" || (reportType === "detailed" && scope === "month")) && (
             <div className="grid grid-cols-2 gap-4 rounded-xl bg-gray-50 p-4 border border-gray-100">
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-400">Year</label>

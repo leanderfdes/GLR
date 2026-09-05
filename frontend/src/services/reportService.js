@@ -13,3 +13,16 @@ export const downloadAttendanceReport = async (filters = {}) => {
 
   return response.data
 }
+
+export const downloadAttendanceSummaryReport = async (filters = {}) => {
+  const params = new URLSearchParams()
+  params.append("year", filters.year)
+  params.append("month", filters.month)
+  if (filters.employee_id) params.append("employee_id", filters.employee_id)
+
+  const response = await api.get(`/export/attendance/summary/xlsx?${params.toString()}`, {
+    responseType: "blob"
+  })
+
+  return response.data
+}
