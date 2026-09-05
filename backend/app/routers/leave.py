@@ -9,6 +9,7 @@ from app.core.security import get_current_user, require_admin_or_superadmin
 from app.models.user import User
 from app.models.leave import LeaveRequest
 from app.models.comp_off import CompOffBalance, CompOffTransaction
+from app.services.leave_service import materialize_comp_off_leave
 from app.schemas.leave import LeaveRequestCreate, LeaveRequestResponse, LeaveActionRequest, CompOffBalanceResponse
 
 router = APIRouter(
@@ -135,6 +136,7 @@ def action_leave(
     # If approved, deduct from balance if available
     if data.action == "approve":
         days_requested = (leave.end_date - leave.start_date).days + 1
+        covered_days = 0
         balance = db.query(CompOffBalance).filter(CompOffBalance.user_id == leave.user_id).first()
         if not balance:
             balance = CompOffBalance(user_id=leave.user_id)
@@ -145,6 +147,7 @@ def action_leave(
         
         if available > 0:
             deduct_amount = min(available, float(days_requested))
+            covered_days = int(deduct_amount)
             balance.days_used = float(balance.days_used or 0) + deduct_amount
             
             txn = CompOffTransaction(
@@ -156,6 +159,7 @@ def action_leave(
                 approved_by=admin_user.id
             )
             db.add(txn)
+        materialize_comp_off_leave(db, leave, covered_days)
 
     db.commit()
     db.refresh(leave)

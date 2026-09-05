@@ -13,6 +13,7 @@ from app.models.attendance import AttendanceLog
 from app.models.holiday import Holiday
 from app.models.working_days import WorkingDaysConfig
 from app.models.payroll import MonthlySalary
+from app.services.leave_service import get_comp_off_leave_dates
 
 router = APIRouter(
     prefix="/payroll",
@@ -133,6 +134,7 @@ def get_payroll_summary(
         ).all()
 
         log_by_date = {log.date: log for log in logs}
+        comp_off_leave_dates = get_comp_off_leave_dates(db, emp.id, q_year, q_month)
 
         total_deductions = 0.0
         worked_days = 0.0
@@ -160,13 +162,15 @@ def get_payroll_summary(
                     elif log.day_status == "half_day":
                         worked_days += 0.5
                         total_deductions += 0.5
-                    elif log.day_status == "comp_off_leave":
+                    elif d in comp_off_leave_dates or log.day_status == "comp_off_leave":
                         paid_leaves += 1.0
                     elif log.day_status == "absent":
                         total_deductions += 1.0
                 else:
                     # No log on an expected working day is considered absent (only for past or current days)
-                    if d <= current_date_ist:
+                    if d in comp_off_leave_dates:
+                        paid_leaves += 1.0
+                    elif d <= current_date_ist:
                         total_deductions += 1.0
             else:
                 # Holiday or Weekend
@@ -317,6 +321,7 @@ def get_my_pay_slip(
     ).all()
 
     log_by_date = {log.date: log for log in logs}
+    comp_off_leave_dates = get_comp_off_leave_dates(db, current_user.id, q_year, q_month)
 
     total_deductions = 0.0
     worked_days = 0.0
@@ -344,13 +349,15 @@ def get_my_pay_slip(
                 elif log.day_status == "half_day":
                     worked_days += 0.5
                     total_deductions += 0.5
-                elif log.day_status == "comp_off_leave":
+                elif d in comp_off_leave_dates or log.day_status == "comp_off_leave":
                     paid_leaves += 1.0
                 elif log.day_status == "absent":
                     total_deductions += 1.0
             else:
                 # No log on an expected working day is considered absent (only for past or current days)
-                if d <= current_date_ist:
+                if d in comp_off_leave_dates:
+                    paid_leaves += 1.0
+                elif d <= current_date_ist:
                     total_deductions += 1.0
         else:
             # Holiday or Weekend

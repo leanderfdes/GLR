@@ -16,6 +16,7 @@ from app.models.company import Location
 from app.models.holiday import Holiday
 from app.models.working_days import WorkingDaysConfig
 from app.services.gps_service import calculate_distance_meters
+from app.services.leave_service import get_comp_off_leave_dates
 from app.routers.payroll import get_employee_monthly_salary, is_user_expected_working_day
 from app.utils.timezone import now_ist
 
@@ -266,6 +267,7 @@ def export_attendance_summary_excel(
     for employee in employees:
         employee_logs = logs_by_employee.get(employee.id, [])
         logs_by_date = {log.date: log for log in employee_logs}
+        comp_off_leave_dates = get_comp_off_leave_dates(db, employee.id, year, month)
 
         expected_dates = []
         target_seconds = 0.0
@@ -289,8 +291,8 @@ def export_attendance_summary_excel(
             )
             target_seconds += expected_full_hours * 3600
 
-        full_days = half_days = absent_days = present_days = 0
-        total_deductions = extra_days_worked = paid_leaves = 0.0
+        full_days = half_days = absent_days = present_days = paid_leave_days = 0
+        total_deductions = extra_days_worked = 0.0
 
         for current_date in expected_dates:
             log = logs_by_date.get(current_date)
@@ -301,8 +303,8 @@ def export_attendance_summary_excel(
                 half_days += 1
                 present_days += 1
                 total_deductions += 0.5
-            elif log and log.day_status == "comp_off_leave":
-                paid_leaves += 1.0
+            elif current_date in comp_off_leave_dates or (log and log.day_status == "comp_off_leave"):
+                paid_leave_days += 1
             elif log and log.day_status == "absent":
                 absent_days += 1
                 total_deductions += 1.0
@@ -321,8 +323,8 @@ def export_attendance_summary_excel(
                 present_days += 1
                 half_days += 1
                 extra_days_worked += 0.5
-            elif log.day_status == "comp_off_leave":
-                paid_leaves += 1.0
+            elif log.day_status == "comp_off_leave" or log.date in comp_off_leave_dates:
+                paid_leave_days += 1
 
         total_seconds = sum(
             interval_seconds_by_log.get(log.id, 0.0)
@@ -356,6 +358,7 @@ def export_attendance_summary_excel(
             "no of days full day": full_days,
             "half day": half_days,
             "absent": absent_days,
+            "paid leave / comp-off": paid_leave_days,
             "no. holidays in month": len(holiday_dates),
             "total hours worked": total_hours,
             "total hours worked (HH:MM)": total_hours_hhmm,
@@ -370,6 +373,7 @@ def export_attendance_summary_excel(
         "no of days full day",
         "half day",
         "absent",
+        "paid leave / comp-off",
         "no. holidays in month",
         "total hours worked",
         "total hours worked (HH:MM)",
